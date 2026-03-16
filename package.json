@@ -1,22 +1,22 @@
 {
-  "name": "@accrescent/protoc-gen-grpc-angular",
-  "version": "0.0.0",
-  "description": "Angular client generator for gRPC APIs using gRPC transcoding",
-  "license": "Apache-2.0",
-  "type": "module",
-  "scripts": {
-    "build": "tsc",
-    "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check",
-    "lint": "oxlint",
-    "lint:ci": "oxlint --deny-warnings --format=github",
-    "lint:fix": "oxlint --fix",
-    "test": "vitest"
-  },
-  "devDependencies": {
-    "oxfmt": "^0.41.0",
-    "oxlint": "^1.56.0",
-    "typescript": "^5.9.3",
-    "vitest": "^4.1.0"
-  }
+    "name": "@accrescent/protoc-gen-grpc-angular",
+    "version": "0.0.0",
+    "description": "Angular client generator for gRPC APIs using gRPC transcoding",
+    "license": "Apache-2.0",
+    "type": "module",
+    "scripts": {
+        "build": "tsc",
+        "fmt": "oxfmt",
+        "fmt:check": "oxfmt --check",
+        "lint": "oxlint",
+        "lint:ci": "oxlint --deny-warnings --format=github",
+        "lint:fix": "oxlint --fix",
+        "test": "vitest"
+    },
+    "devDependencies": {
+        "oxfmt": "^0.41.0",
+        "oxlint": "^1.56.0",
+        "typescript": "^5.9.3",
+        "vitest": "^4.1.0"
+    }
 }

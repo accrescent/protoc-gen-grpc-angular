@@ -1,6 +1,15 @@
 {
-  "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "sortPackageJson": {
-    "sortScripts": true
-  }
+    "$schema": "./node_modules/oxfmt/configuration_schema.json",
+    "overrides": [
+        {
+            "files": ["*.yaml"],
+            "options": {
+                "tabWidth": 2
+            }
+        }
+    ],
+    "sortPackageJson": {
+        "sortScripts": true
+    },
+    "tabWidth": 4
 }
