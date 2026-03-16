@@ -10,11 +10,13 @@
     "fmt:check": "oxfmt --check",
     "lint": "oxlint",
     "lint:ci": "oxlint --deny-warnings --format=github",
-    "lint:fix": "oxlint --fix"
+    "lint:fix": "oxlint --fix",
+    "test": "vitest"
   },
   "devDependencies": {
     "oxfmt": "^0.41.0",
     "oxlint": "^1.56.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.0"
   }
 }
