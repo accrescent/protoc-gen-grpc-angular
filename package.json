@@ -7,10 +7,14 @@
   "scripts": {
     "build": "tsc",
     "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check"
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint",
+    "lint:ci": "oxlint --deny-warnings --format=github",
+    "lint:fix": "oxlint --fix"
   },
   "devDependencies": {
     "oxfmt": "^0.41.0",
+    "oxlint": "^1.56.0",
     "typescript": "^5.9.3"
   }
 }

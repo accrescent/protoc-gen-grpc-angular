@@ -32,6 +32,17 @@ jobs:
       - run: npm ci
       - run: npm run fmt:check
 
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          check-latest: true
+      - run: npm ci
+      - run: npm run lint:ci
+
   reuse:
     runs-on: ubuntu-latest
     steps:
