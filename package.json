@@ -4,10 +4,13 @@
   "description": "Angular client generator for gRPC APIs using gRPC transcoding",
   "license": "Apache-2.0",
   "type": "module",
-  "devDependencies": {
-    "typescript": "^5.9.3"
-  },
   "scripts": {
-      "build": "tsc"
+    "build": "tsc",
+    "fmt:check": "oxfmt --check",
+    "fmt": "oxfmt"
+  },
+  "devDependencies": {
+    "oxfmt": "^0.41.0",
+    "typescript": "^5.9.3"
   }
 }
