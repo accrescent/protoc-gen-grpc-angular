@@ -5,6 +5,13 @@
     },
     "rules": {
         "eqeqeq": "warn",
-        "typescript/explicit-function-return-type": "warn"
+        "typescript/explicit-function-return-type": "warn",
+        "typescript/switch-exhaustiveness-check": [
+            "warn",
+            {
+                "considerDefaultExhaustiveForUnions": true,
+                "requireDefaultForNonUnion": true
+            }
+        ]
     }
 }
