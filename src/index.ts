@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-export function sum(a: number, b: number): number {
-    return a + b;
-}
+import { runNodeJs } from "@bufbuild/protoplugin";
+
+import { plugin } from "./plugin.js";
+
+runNodeJs(plugin);
