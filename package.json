@@ -3,6 +3,9 @@
     "version": "0.0.0",
     "description": "Angular client generator for gRPC APIs using gRPC transcoding",
     "license": "Apache-2.0",
+    "bin": {
+        "protoc-gen-grpc-angular": "dist/index.js"
+    },
     "type": "module",
     "scripts": {
         "build": "tsc",
