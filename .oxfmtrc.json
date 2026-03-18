@@ -4,6 +4,7 @@
         {
             "files": ["*.yaml"],
             "options": {
+                "singleQuote": true,
                 "tabWidth": 2
             }
         }
