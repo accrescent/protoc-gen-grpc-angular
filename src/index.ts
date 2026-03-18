@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 // SPDX-FileCopyrightText: © 2026 Logan Magee
 //
 // SPDX-License-Identifier: Apache-2.0
