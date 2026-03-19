@@ -23,7 +23,7 @@ import { plugin } from "./plugin.js";
 
 function generate(
     methods: { name: string; clientStreaming?: boolean; serverStreaming?: boolean }[],
-): string {
+): string | undefined {
     const options = create(MethodOptionsSchema);
     setExtension(
         options,
@@ -64,11 +64,7 @@ function generate(
     });
 
     const response = plugin.run(request);
-    const generated = response.file.find((f) => f.name?.endsWith("test_ng.ts"));
-    if (generated === undefined) {
-        throw new Error("expected generated file test_ng.ts");
-    }
-    return generated.content;
+    return response.file.find((f) => f.name?.endsWith("test_ng.ts"))?.content;
 }
 
 describe("plugin", () => {
@@ -82,7 +78,14 @@ describe("plugin", () => {
             { name: "StreamMethod", clientStreaming, serverStreaming },
         ]);
 
+        expect(content).toBeDefined();
         expect(content).toContain("unaryMethod");
         expect(content).not.toContain("streamMethod");
+    });
+
+    test("skips services with no unary methods", () => {
+        const content = generate([{ name: "StreamMethod", serverStreaming: true }]);
+
+        expect(content).toBeUndefined();
     });
 });

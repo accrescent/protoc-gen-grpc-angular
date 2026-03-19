@@ -31,6 +31,11 @@ export function generateTs(schema: Schema): void {
         const mapSym = generatedFile.import("map", "rxjs");
 
         for (const service of file.services) {
+            // There's no need to generate the service if it has no methods for us to generate
+            if (!service.methods.some((m) => m.methodKind === "unary")) {
+                continue;
+            }
+
             const className = safeIdentifier(`Ng${service.name}`);
             const baseUrlTokenName = safeIdentifier(`${toScreamingSnake(className)}_BASE_URL`);
 
