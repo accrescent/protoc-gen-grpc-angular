@@ -8,6 +8,6 @@ import { generateTs } from "./generateTs.js";
 
 export const plugin = createEcmaScriptPlugin({
     name: "protoc-gen-grpc-angular",
-    version: "0.0.0",
+    version: "0.2.0",
     generateTs: generateTs,
 });
