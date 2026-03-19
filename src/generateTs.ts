@@ -60,6 +60,11 @@ export function generateTs(schema: Schema): void {
             );
 
             for (const method of service.methods) {
+                // This plugin supports only unary RPCs
+                if (method.methodKind !== "unary") {
+                    continue;
+                }
+
                 const methodName = safeIdentifier(lowercaseFirstChar(method.name));
                 const requestType = generatedFile.importShape(method.input);
                 const responseType = generatedFile.importShape(method.output);
