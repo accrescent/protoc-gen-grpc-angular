@@ -21,6 +21,7 @@ export function generateTs(schema: Schema): void {
         generatedFile.preamble(file);
 
         const injectableSym = generatedFile.import("Injectable", "@angular/core");
+        const injectionTokenSym = generatedFile.import("InjectionToken", "@angular/core");
         const injectSym = generatedFile.import("inject", "@angular/core");
         const httpClientSym = generatedFile.import("HttpClient", "@angular/common/http");
         const jsonValueSym = generatedFile.import("JsonValue", "@bufbuild/protobuf", true);
@@ -30,18 +31,32 @@ export function generateTs(schema: Schema): void {
         const mapSym = generatedFile.import("map", "rxjs");
 
         for (const service of file.services) {
+            const className = safeIdentifier(`Ng${service.name}`);
+            const baseUrlTokenName = safeIdentifier(`${toScreamingSnake(className)}_BASE_URL`);
+
+            generatedFile.print(
+                generatedFile.export("const", baseUrlTokenName),
+                " = new ",
+                injectionTokenSym,
+                `<string>("${baseUrlTokenName}");`,
+            );
+            generatedFile.print();
             generatedFile.print(generatedFile.jsDoc(service));
             generatedFile.print("@", injectableSym, '({ providedIn: "root" })');
-            generatedFile.print(
-                generatedFile.export("class", safeIdentifier(`Ng${service.name}`)),
-                " {",
-            );
+            generatedFile.print(generatedFile.export("class", className), " {");
             generatedFile.print(
                 "    private readonly httpClient = ",
                 injectSym,
                 "(",
                 httpClientSym,
                 ");",
+            );
+            generatedFile.print(
+                "    private readonly baseUrl = ",
+                injectSym,
+                "(",
+                baseUrlTokenName,
+                ', { optional: true }) ?? "";',
             );
 
             for (const method of service.methods) {
@@ -225,11 +240,13 @@ function buildUrlExpression(template: PathTemplate, input: DescMessage): string 
         url += `:${template.verb}`;
     }
 
-    const hasVariables = template.segments.some((s) => s.kind === PathSegmentKind.Variable);
-
-    return hasVariables ? `\`${url}\`` : `"${url}"`;
+    return `\`\${this.baseUrl}${url}\``;
 }
 
 function lowercaseFirstChar(s: string): string {
     return s.charAt(0).toLowerCase() + s.slice(1);
+}
+
+function toScreamingSnake(s: string): string {
+    return s.replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase();
 }
