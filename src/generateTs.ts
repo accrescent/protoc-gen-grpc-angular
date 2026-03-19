@@ -31,7 +31,10 @@ export function generateTs(schema: Schema): void {
 
         for (const service of file.services) {
             generatedFile.print("@", injectableSym, '({ providedIn: "root" })');
-            generatedFile.print(generatedFile.export("class", safeIdentifier(service.name)), " {");
+            generatedFile.print(
+                generatedFile.export("class", safeIdentifier(`Ng${service.name}`)),
+                " {",
+            );
             generatedFile.print(
                 "    private readonly httpClient = ",
                 injectSym,
