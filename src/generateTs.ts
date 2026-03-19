@@ -30,6 +30,7 @@ export function generateTs(schema: Schema): void {
         const mapSym = generatedFile.import("map", "rxjs");
 
         for (const service of file.services) {
+            generatedFile.print(generatedFile.jsDoc(service));
             generatedFile.print("@", injectableSym, '({ providedIn: "root" })');
             generatedFile.print(
                 generatedFile.export("class", safeIdentifier(`Ng${service.name}`)),
@@ -57,6 +58,7 @@ export function generateTs(schema: Schema): void {
                 const parsedRule = parseHttpRule(httpRule);
 
                 generatedFile.print();
+                generatedFile.print(generatedFile.jsDoc(method, "    "));
                 generatedFile.print(
                     "    ",
                     methodName,
