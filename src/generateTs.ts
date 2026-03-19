@@ -23,7 +23,11 @@ export function generateTs(schema: Schema): void {
         const injectableSym = generatedFile.import("Injectable", "@angular/core");
         const injectSym = generatedFile.import("inject", "@angular/core");
         const httpClientSym = generatedFile.import("HttpClient", "@angular/common/http");
+        const jsonValueSym = generatedFile.import("JsonValue", "@bufbuild/protobuf", true);
+        const fromJsonSym = generatedFile.import("fromJson", "@bufbuild/protobuf");
+        const toJsonSym = generatedFile.import("toJson", "@bufbuild/protobuf");
         const observableSym = generatedFile.import("Observable", "rxjs");
+        const mapSym = generatedFile.import("map", "rxjs");
 
         for (const service of file.services) {
             generatedFile.print("@", injectableSym, '({ providedIn: "root" })');
@@ -40,6 +44,7 @@ export function generateTs(schema: Schema): void {
                 const methodName = safeIdentifier(lowercaseFirstChar(method.name));
                 const requestType = generatedFile.importShape(method.input);
                 const responseType = generatedFile.importShape(method.output);
+                const responseSchema = generatedFile.importSchema(method.output);
                 if (!hasOption(method, http)) {
                     throw new Error(
                         `${method.parent.typeName}.${method.name}: missing required google.api.http annotation`,
@@ -75,16 +80,24 @@ export function generateTs(schema: Schema): void {
 
                 let bodyExpr: string | undefined;
                 if (sendsBody) {
+                    const requestSchema = generatedFile.importSchema(method.input);
+                    generatedFile.print(
+                        "        const json = ",
+                        toJsonSym,
+                        "(",
+                        requestSchema,
+                        ", request);",
+                    );
                     if (pathFields.length > 0) {
                         const destructured = pathFields
-                            .map((f) => `${f.localName}: _${f.localName}`)
+                            .map((f) => `${f.jsonName}: _${f.jsonName}`)
                             .join(", ");
                         generatedFile.print(
-                            `        const { ${destructured}, ...body } = request;`,
+                            `        const { ${destructured}, ...body } = json as Record<string, unknown>;`,
                         );
                         bodyExpr = "body";
                     } else {
-                        bodyExpr = "request";
+                        bodyExpr = "json";
                     }
                 }
 
@@ -109,10 +122,16 @@ export function generateTs(schema: Schema): void {
                 generatedFile.print(
                     "        return this.httpClient.",
                     parsedRule.method,
-                    "<",
-                    responseType,
-                    `>(${buildHttpCallArgs(parsedRule, bodyExpr, usesQueryParams).join(", ")});`,
+                    "(",
+                    buildHttpCallArgs(parsedRule, sendsBody, bodyExpr, usesQueryParams).join(", "),
+                    ").pipe(",
                 );
+                generatedFile.print("            ", mapSym, "((response) => ", fromJsonSym, "(");
+                generatedFile.print("                ", responseSchema, ",");
+                generatedFile.print("                response as ", jsonValueSym, ",");
+                generatedFile.print("                { ignoreUnknownFields: true },");
+                generatedFile.print("            )),");
+                generatedFile.print("        );");
 
                 generatedFile.print("    }");
             }
@@ -155,6 +174,7 @@ function bodyCarriesUncapturedFields(rule: ParsedHttpRule): boolean {
 
 function buildHttpCallArgs(
     rule: ParsedHttpRule,
+    sendsBody: boolean,
     bodyExpr: string | undefined,
     hasQueryParams: boolean,
 ): string[] {
@@ -166,7 +186,7 @@ function buildHttpCallArgs(
             break;
         case HttpMethod.Patch:
         case HttpMethod.Post:
-            args.push(bodyExpr ?? "null");
+            args.push(sendsBody ? (bodyExpr ?? "null") : "null");
             break;
     }
 
