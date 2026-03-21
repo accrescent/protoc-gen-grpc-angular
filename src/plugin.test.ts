@@ -23,6 +23,7 @@ import { plugin } from "./plugin.js";
 
 function generate(
     methods: { name: string; clientStreaming?: boolean; serverStreaming?: boolean }[],
+    parameter = "target=ts",
 ): string | undefined {
     const options = create(MethodOptionsSchema);
     setExtension(
@@ -53,7 +54,7 @@ function generate(
     });
 
     const request = create(CodeGeneratorRequestSchema, {
-        parameter: "target=ts",
+        parameter,
         fileToGenerate: ["test.proto"],
         protoFile: [
             file_google_protobuf_descriptor.proto,
@@ -87,5 +88,23 @@ describe("plugin", () => {
         const content = generate([{ name: "StreamMethod", serverStreaming: true }]);
 
         expect(content).toBeUndefined();
+    });
+
+    test("generates valid type overloads when valid_types is true", () => {
+        const content = generate([{ name: "UnaryMethod" }], "target=ts,valid_types=true");
+
+        expect(content).toBeDefined();
+        expect(content).toContain(
+            "unaryMethod(request: TestRequestValid): Observable<TestResponseValid>",
+        );
+    });
+
+    test("does not generate valid type overloads without valid_types", () => {
+        const content = generate([{ name: "UnaryMethod" }]);
+
+        expect(content).toBeDefined();
+        expect(content).not.toContain(
+            "unaryMethod(request: TestRequestValid): Observable<TestResponseValid>",
+        );
     });
 });

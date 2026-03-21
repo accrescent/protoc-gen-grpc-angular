@@ -5,9 +5,11 @@
 import { createEcmaScriptPlugin } from "@bufbuild/protoplugin";
 
 import { generateTs } from "./generateTs.js";
+import { type PluginOptions, parseOptions } from "./parseOptions.js";
 
-export const plugin = createEcmaScriptPlugin({
+export const plugin = createEcmaScriptPlugin<PluginOptions>({
     name: "protoc-gen-grpc-angular",
     version: "0.2.0",
     generateTs: generateTs,
+    parseOptions: parseOptions,
 });

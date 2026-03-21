@@ -14,8 +14,11 @@ import {
     type PathTemplate,
     parseHttpRule,
 } from "./httpRule.js";
+import type { PluginOptions } from "./parseOptions.js";
 
-export function generateTs(schema: Schema): void {
+export function generateTs(schema: Schema<PluginOptions>): void {
+    const { validTypes } = schema.options;
+
     for (const file of schema.files) {
         const generatedFile = schema.generateFile(`${file.name}_ng.ts`);
         generatedFile.preamble(file);
@@ -83,7 +86,36 @@ export function generateTs(schema: Schema): void {
                 const parsedRule = parseHttpRule(httpRule);
 
                 generatedFile.print();
-                generatedFile.print(generatedFile.jsDoc(method, "    "));
+                if (validTypes) {
+                    const validRequestType = generatedFile.importValid(method.input);
+                    const validResponseType = generatedFile.importValid(method.output);
+                    generatedFile.print(generatedFile.jsDoc(method, "    "));
+                    generatedFile.print(
+                        "    ",
+                        methodName,
+                        "(request: ",
+                        validRequestType,
+                        "): ",
+                        observableSym,
+                        "<",
+                        validResponseType,
+                        ">;",
+                    );
+                    generatedFile.print(generatedFile.jsDoc(method, "    "));
+                    generatedFile.print(
+                        "    ",
+                        methodName,
+                        "(request: ",
+                        requestType,
+                        "): ",
+                        observableSym,
+                        "<",
+                        responseType,
+                        ">;",
+                    );
+                } else {
+                    generatedFile.print(generatedFile.jsDoc(method, "    "));
+                }
                 generatedFile.print(
                     "    ",
                     methodName,
