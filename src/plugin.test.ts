@@ -90,21 +90,19 @@ describe("plugin", () => {
         expect(content).toBeUndefined();
     });
 
-    test("generates valid type overloads when valid_types is true", () => {
-        const content = generate([{ name: "UnaryMethod" }], "target=ts,valid_types=true");
+    test("uses valid response types when valid_responses is true", () => {
+        const content = generate([{ name: "UnaryMethod" }], "target=ts,valid_responses=true");
 
         expect(content).toBeDefined();
         expect(content).toContain(
-            "unaryMethod(request: TestRequestValid): Observable<TestResponseValid>",
+            "unaryMethod(request: TestRequest): Observable<TestResponseValid>",
         );
     });
 
-    test("does not generate valid type overloads without valid_types", () => {
+    test("does not use valid response types without valid_responses", () => {
         const content = generate([{ name: "UnaryMethod" }]);
 
         expect(content).toBeDefined();
-        expect(content).not.toContain(
-            "unaryMethod(request: TestRequestValid): Observable<TestResponseValid>",
-        );
+        expect(content).toContain("unaryMethod(request: TestRequest): Observable<TestResponse>");
     });
 });

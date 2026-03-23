@@ -3,22 +3,22 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export interface PluginOptions {
-    validTypes: boolean;
+    validResponses: boolean;
 }
 
 export function parseOptions(rawOptions: { key: string; value: string }[]): PluginOptions {
-    const options: PluginOptions = { validTypes: false };
+    const options: PluginOptions = { validResponses: false };
 
     for (const { key, value } of rawOptions) {
         switch (key) {
-            case "valid_types":
+            case "valid_responses":
                 if (value === "true") {
-                    options.validTypes = true;
+                    options.validResponses = true;
                 } else if (value === "false") {
-                    options.validTypes = false;
+                    options.validResponses = false;
                 } else {
                     throw new Error(
-                        `invalid value for valid_types: expected "true" or "false", got "${value}"`,
+                        `invalid value for valid_responses: expected "true" or "false", got "${value}"`,
                     );
                 }
                 break;

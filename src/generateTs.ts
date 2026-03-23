@@ -17,7 +17,7 @@ import {
 import type { PluginOptions } from "./parseOptions.js";
 
 export function generateTs(schema: Schema<PluginOptions>): void {
-    const { validTypes } = schema.options;
+    const { validResponses } = schema.options;
 
     for (const file of schema.files) {
         const generatedFile = schema.generateFile(`${file.name}_ng.ts`);
@@ -85,37 +85,12 @@ export function generateTs(schema: Schema<PluginOptions>): void {
                 const httpRule = getOption(method, http);
                 const parsedRule = parseHttpRule(httpRule);
 
+                const methodResponseType = validResponses
+                    ? generatedFile.importValid(method.output)
+                    : responseType;
+
                 generatedFile.print();
-                if (validTypes) {
-                    const validRequestType = generatedFile.importValid(method.input);
-                    const validResponseType = generatedFile.importValid(method.output);
-                    generatedFile.print(generatedFile.jsDoc(method, "    "));
-                    generatedFile.print(
-                        "    ",
-                        methodName,
-                        "(request: ",
-                        validRequestType,
-                        "): ",
-                        observableSym,
-                        "<",
-                        validResponseType,
-                        ">;",
-                    );
-                    generatedFile.print(generatedFile.jsDoc(method, "    "));
-                    generatedFile.print(
-                        "    ",
-                        methodName,
-                        "(request: ",
-                        requestType,
-                        "): ",
-                        observableSym,
-                        "<",
-                        responseType,
-                        ">;",
-                    );
-                } else {
-                    generatedFile.print(generatedFile.jsDoc(method, "    "));
-                }
+                generatedFile.print(generatedFile.jsDoc(method, "    "));
                 generatedFile.print(
                     "    ",
                     methodName,
@@ -124,7 +99,7 @@ export function generateTs(schema: Schema<PluginOptions>): void {
                     "): ",
                     observableSym,
                     "<",
-                    responseType,
+                    methodResponseType,
                     ">",
                     " {",
                 );
