@@ -167,7 +167,11 @@ export function generateTs(schema: Schema<PluginOptions>): void {
                 generatedFile.print("                ", responseSchema, ",");
                 generatedFile.print("                response as ", jsonValueSym, ",");
                 generatedFile.print("                { ignoreUnknownFields: true },");
-                generatedFile.print("            )),");
+                if (validResponses) {
+                    generatedFile.print("            ) as ", methodResponseType, "),");
+                } else {
+                    generatedFile.print("            )),");
+                }
                 generatedFile.print("        );");
 
                 generatedFile.print("    }");
