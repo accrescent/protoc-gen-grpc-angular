@@ -9,7 +9,7 @@ import { type PluginOptions, parseOptions } from "./parseOptions.js";
 
 export const plugin = createEcmaScriptPlugin<PluginOptions>({
     name: "protoc-gen-grpc-angular",
-    version: "0.4.0",
+    version: "0.4.1",
     generateTs: generateTs,
     parseOptions: parseOptions,
 });
