@@ -5,5 +5,11 @@
         "automerge": true,
         "enabled": true,
         "commitMessageAction": "Update lock file"
-    }
+    },
+    "packageRules": [
+        {
+            "matchDepTypes": ["devDependencies"],
+            "automerge": true
+        }
+    ]
 }
