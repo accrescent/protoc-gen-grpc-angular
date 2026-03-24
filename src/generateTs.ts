@@ -5,6 +5,7 @@
 import { type DescField, type DescMessage, getOption, hasOption } from "@bufbuild/protobuf";
 import { safeIdentifier, type Schema } from "@bufbuild/protoplugin";
 import { http } from "@buf/googleapis_googleapis.bufbuild_es/google/api/annotations_pb.js";
+import { default_host } from "@buf/googleapis_googleapis.bufbuild_es/google/api/client_pb.js";
 
 import {
     HttpBodyOption,
@@ -41,6 +42,9 @@ export function generateTs(schema: Schema<PluginOptions>): void {
 
             const className = safeIdentifier(`Ng${service.name}`);
             const baseUrlTokenName = safeIdentifier(`${toScreamingSnake(className)}_BASE_URL`);
+            const defaultBaseUrl = hasOption(service, default_host)
+                ? `https://${getOption(service, default_host)}`
+                : "";
 
             generatedFile.print(
                 generatedFile.export("const", baseUrlTokenName),
@@ -64,7 +68,7 @@ export function generateTs(schema: Schema<PluginOptions>): void {
                 injectSym,
                 "(",
                 baseUrlTokenName,
-                ', { optional: true }) ?? "";',
+                `, { optional: true }) ?? "${defaultBaseUrl}";`,
             );
 
             for (const method of service.methods) {

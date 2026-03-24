@@ -7,12 +7,19 @@ import {
     CodeGeneratorRequestSchema,
     FileDescriptorProtoSchema,
     MethodOptionsSchema,
+    ServiceOptionsSchema,
     file_google_protobuf_descriptor,
+    file_google_protobuf_duration,
 } from "@bufbuild/protobuf/wkt";
 import {
     file_google_api_annotations,
     http,
 } from "@buf/googleapis_googleapis.bufbuild_es/google/api/annotations_pb.js";
+import {
+    default_host,
+    file_google_api_client,
+} from "@buf/googleapis_googleapis.bufbuild_es/google/api/client_pb.js";
+import { file_google_api_launch_stage } from "@buf/googleapis_googleapis.bufbuild_es/google/api/launch_stage_pb.js";
 import {
     HttpRuleSchema,
     file_google_api_http,
@@ -29,23 +36,31 @@ function generate(
         hasHttpAnnotation?: boolean;
     }[],
     parameter = "target=ts",
+    defaultHostValue?: string,
 ): string | undefined {
-    const options = create(MethodOptionsSchema);
+    const methodOptions = create(MethodOptionsSchema);
     setExtension(
-        options,
+        methodOptions,
         http,
         create(HttpRuleSchema, { pattern: { case: "get", value: "/v1/test" } }),
     );
+
+    let serviceOptions;
+    if (defaultHostValue !== undefined) {
+        serviceOptions = create(ServiceOptionsSchema);
+        setExtension(serviceOptions, default_host, defaultHostValue);
+    }
 
     const file = create(FileDescriptorProtoSchema, {
         name: "test.proto",
         package: "test",
         syntax: "proto3",
-        dependency: ["google/api/annotations.proto"],
+        dependency: ["google/api/annotations.proto", "google/api/client.proto"],
         messageType: [{ name: "TestRequest" }, { name: "TestResponse" }],
         service: [
             {
                 name: "TestService",
+                ...(serviceOptions !== undefined && { options: serviceOptions }),
                 method: methods.map((m) => {
                     const base = {
                         name: m.name,
@@ -54,7 +69,9 @@ function generate(
                         clientStreaming: m.clientStreaming ?? false,
                         serverStreaming: m.serverStreaming ?? false,
                     };
-                    return (m.hasHttpAnnotation ?? true) ? { ...base, options } : base;
+                    return (m.hasHttpAnnotation ?? true)
+                        ? { ...base, options: methodOptions }
+                        : base;
                 }),
             },
         ],
@@ -67,6 +84,9 @@ function generate(
             file_google_protobuf_descriptor.proto,
             file_google_api_http.proto,
             file_google_api_annotations.proto,
+            file_google_protobuf_duration.proto,
+            file_google_api_launch_stage.proto,
+            file_google_api_client.proto,
             file,
         ],
     });
@@ -128,5 +148,23 @@ describe("plugin", () => {
         const content = generate([{ name: "UnannotatedMethod", hasHttpAnnotation: false }]);
 
         expect(content).toBeUndefined();
+    });
+
+    test("uses default_host as base URL fallback when present", () => {
+        const content = generate([{ name: "UnaryMethod" }], "target=ts", "api.example.com");
+
+        expect(content).toBeDefined();
+        expect(content).toContain(
+            'private readonly baseUrl = inject(NG_TEST_SERVICE_BASE_URL, { optional: true }) ?? "https://api.example.com";',
+        );
+    });
+
+    test("uses empty string as base URL fallback when default_host is absent", () => {
+        const content = generate([{ name: "UnaryMethod" }]);
+
+        expect(content).toBeDefined();
+        expect(content).toContain(
+            'private readonly baseUrl = inject(NG_TEST_SERVICE_BASE_URL, { optional: true }) ?? "";',
+        );
     });
 });
