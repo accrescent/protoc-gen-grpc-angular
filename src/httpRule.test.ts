@@ -155,6 +155,41 @@ describe("parseHttpRule", () => {
         );
     });
 
+    test("parses variable with resource pattern", () => {
+        const result = parseHttpRule(
+            create(HttpRuleSchema, { pattern: { case: "get", value: "/v1/{name=operations}" } }),
+        );
+        expect(result.template.segments).toEqual([
+            { kind: PathSegmentKind.Literal, value: "v1" },
+            { kind: PathSegmentKind.Variable, ident: "name" },
+        ]);
+    });
+
+    test("parses variable with double asterisk resource pattern", () => {
+        const result = parseHttpRule(
+            create(HttpRuleSchema, {
+                pattern: { case: "get", value: "/v1/{name=operations/**}" },
+            }),
+        );
+        expect(result.template.segments).toEqual([
+            { kind: PathSegmentKind.Literal, value: "v1" },
+            { kind: PathSegmentKind.Variable, ident: "name" },
+        ]);
+    });
+
+    test("parses variable with double asterisk resource pattern and verb", () => {
+        const result = parseHttpRule(
+            create(HttpRuleSchema, {
+                pattern: { case: "post", value: "/v1/{name=operations/**}:cancel" },
+            }),
+        );
+        expect(result.template.segments).toEqual([
+            { kind: PathSegmentKind.Literal, value: "v1" },
+            { kind: PathSegmentKind.Variable, ident: "name" },
+        ]);
+        expect(result.template.verb).toBe("cancel");
+    });
+
     // Body parsing
     test("parses empty body as NoBody", () => {
         const result = parseHttpRule(

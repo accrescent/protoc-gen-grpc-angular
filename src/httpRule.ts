@@ -57,7 +57,8 @@ export function parseHttpRule(rule: HttpRule): ParsedHttpRule {
 // segments = segment { "/" segment } ;
 // segment = literal | variable ;
 // literal = letter | digit | "-" | "." | "_" | "~" ;
-// variable = "{" ident "}" ;
+// variable = "{" ident [ "=" resource_pattern ] "}" ;
+// resource_pattern = { any character except "{" and "}" } ;
 // ident = letter { letter | digit } ;
 // letter = "A" ... "Z" | "a" ... "z" | "_" ;
 // digit = "0" ... "9" ;
@@ -71,7 +72,7 @@ function parsePathTemplate(raw: string): PathTemplate {
         throw new PatternMissingLeadingSlashError();
     }
 
-    const rawSegments = raw.slice(1).split("/");
+    const rawSegments = splitPathSegments(raw.slice(1));
 
     const lastSegment = rawSegments.at(-1);
     if (lastSegment === undefined) {
@@ -93,11 +94,42 @@ function parsePathTemplate(raw: string): PathTemplate {
     return verb !== undefined ? { segments, verb } : { segments };
 }
 
+function splitPathSegments(raw: string): string[] {
+    const segments: string[] = [];
+    let current = "";
+    let braceDepth = 0;
+
+    for (const char of raw) {
+        if (char === "{") {
+            braceDepth++;
+            current += char;
+        } else if (char === "}") {
+            braceDepth--;
+            current += char;
+        } else if (char === "/" && braceDepth === 0) {
+            if (current !== "") {
+                segments.push(current);
+            }
+            current = "";
+        } else {
+            current += char;
+        }
+    }
+
+    if (current !== "") {
+        segments.push(current);
+    }
+
+    return segments;
+}
+
 function parseSegment(raw: string): PathSegment {
     if (raw.startsWith("{") && raw.endsWith("}")) {
         const inner = raw.slice(1, -1);
-        if (IDENT_REGEX.test(inner)) {
-            return { kind: PathSegmentKind.Variable, ident: inner };
+        const equalsIndex = inner.indexOf("=");
+        const ident = equalsIndex !== -1 ? inner.slice(0, equalsIndex) : inner;
+        if (IDENT_REGEX.test(ident)) {
+            return { kind: PathSegmentKind.Variable, ident };
         } else {
             throw new InvalidVariableIdentError();
         }
