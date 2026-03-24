@@ -35,7 +35,7 @@ export function generateTs(schema: Schema<PluginOptions>): void {
 
         for (const service of file.services) {
             // There's no need to generate the service if it has no methods for us to generate
-            if (!service.methods.some((m) => m.methodKind === "unary")) {
+            if (!service.methods.some((m) => m.methodKind === "unary" && hasOption(m, http))) {
                 continue;
             }
 
@@ -78,9 +78,7 @@ export function generateTs(schema: Schema<PluginOptions>): void {
                 const responseType = generatedFile.importShape(method.output);
                 const responseSchema = generatedFile.importSchema(method.output);
                 if (!hasOption(method, http)) {
-                    throw new Error(
-                        `${method.parent.typeName}.${method.name}: missing required google.api.http annotation`,
-                    );
+                    continue;
                 }
                 const httpRule = getOption(method, http);
                 const parsedRule = parseHttpRule(httpRule);

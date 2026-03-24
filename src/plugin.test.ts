@@ -22,7 +22,12 @@ import { describe, expect, test } from "vitest";
 import { plugin } from "./plugin.js";
 
 function generate(
-    methods: { name: string; clientStreaming?: boolean; serverStreaming?: boolean }[],
+    methods: {
+        name: string;
+        clientStreaming?: boolean;
+        serverStreaming?: boolean;
+        hasHttpAnnotation?: boolean;
+    }[],
     parameter = "target=ts",
 ): string | undefined {
     const options = create(MethodOptionsSchema);
@@ -41,14 +46,16 @@ function generate(
         service: [
             {
                 name: "TestService",
-                method: methods.map((m) => ({
-                    name: m.name,
-                    inputType: ".test.TestRequest",
-                    outputType: ".test.TestResponse",
-                    options,
-                    clientStreaming: m.clientStreaming ?? false,
-                    serverStreaming: m.serverStreaming ?? false,
-                })),
+                method: methods.map((m) => {
+                    const base = {
+                        name: m.name,
+                        inputType: ".test.TestRequest",
+                        outputType: ".test.TestResponse",
+                        clientStreaming: m.clientStreaming ?? false,
+                        serverStreaming: m.serverStreaming ?? false,
+                    };
+                    return (m.hasHttpAnnotation ?? true) ? { ...base, options } : base;
+                }),
             },
         ],
     });
@@ -104,5 +111,22 @@ describe("plugin", () => {
 
         expect(content).toBeDefined();
         expect(content).toContain("unaryMethod(request: TestRequest): Observable<TestResponse>");
+    });
+
+    test("skips unary methods without HTTP annotation", () => {
+        const content = generate([
+            { name: "UnaryMethod" },
+            { name: "UnannotatedMethod", hasHttpAnnotation: false },
+        ]);
+
+        expect(content).toBeDefined();
+        expect(content).toContain("unaryMethod");
+        expect(content).not.toContain("unannotatedMethod");
+    });
+
+    test("skips service when all unary methods lack HTTP annotations", () => {
+        const content = generate([{ name: "UnannotatedMethod", hasHttpAnnotation: false }]);
+
+        expect(content).toBeUndefined();
     });
 });
